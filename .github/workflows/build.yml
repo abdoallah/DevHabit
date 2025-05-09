@@ -1,4 +1,4 @@
-name: Build
+name: .NET Build and Test
 
 on:
   workflow_dispatch:
@@ -13,26 +13,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: DevHabit
-
     steps:
-      - uses: actions/checkout@v4
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: 🛠 Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore DevHabit.sln
+    - name: 🧠 Display folder structure (debugging aid)
+      run: ls -R
 
-      - name: Build
-        run: dotnet build DevHabit.sln --configuration Release --no-restore
+    - name: 💾 Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
 
-      - name: Test
-        run: dotnet test DevHabit.sln --configuration Release --no-restore --no-build
+    - name: 📦 Restore dependencies
+      run: dotnet restore ./DevHabit/DevHabit.sln
 
-      - name: Publish
-        run: dotnet publish DevHabit.sln --configuration Release --no-restore --no-build
+    - name: 🧱 Build solution
+      run: dotnet build ./DevHabit/DevHabit.sln --configuration Release --no-restore
+
+    - name: ✅ Run tests
+      run: dotnet test ./DevHabit/DevHabit.sln --configuration Release --no-build --no-restore --logger trx --results-directory ./TestResults
+
+    - name: 📤 Publish artifacts (optional)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ./TestResults
+
+    - name: 🚀 Publish (build outputs)
+      run: dotnet publish ./DevHabit/DevHabit.sln --configuration Release --no-build --no-restore --output ./publish
