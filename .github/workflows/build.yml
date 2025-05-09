@@ -25,7 +25,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore
+      - name: Restore dependencies
         run: dotnet restore DevHabit.sln
 
       - name: Build
