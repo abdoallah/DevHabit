@@ -26,13 +26,13 @@ jobs:
       run: ls -R
 
     - name: 📦 Restore dependencies
-      run: dotnet restore ./DevHabit/DevHabit.sln
+      run: dotnet restore DevHabit.sln
 
     - name: 🧱 Build
-      run: dotnet build ./DevHabit/DevHabit.sln --configuration Release --no-restore
+      run: dotnet build DevHabit.sln --configuration Release --no-restore
 
     - name: ✅ Test
-      run: dotnet test ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --logger trx --results-directory ./TestResults
+      run: dotnet test DevHabit.sln --configuration Release --no-restore --no-build --logger trx --results-directory ./TestResults
 
     - name: 📤 Upload test results
       if: always()
@@ -42,4 +42,4 @@ jobs:
         path: ./TestResults
 
     - name: 🚀 Publish (build outputs)
-      run: dotnet publish ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --output ./publish
+      run: dotnet publish DevHabit.sln --configuration Release --no-restore --no-build --output ./publish
