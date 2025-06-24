@@ -2,7 +2,7 @@
 
 namespace DevHabit.Api.Database
 {
-    public sealed class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : DbContext(options)
+    internal sealed class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : DbContext(options)
     {
 
         public DbSet<Entities.Habit> Habits { get; set; }
