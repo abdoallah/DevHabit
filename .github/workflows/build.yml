@@ -28,6 +28,7 @@ jobs:
           ls -R
         working-directory: ${{ github.workspace }}
 
+<<<<<<< HEAD
       - name: 💾 Cache NuGet packages
         uses: actions/cache@v3
         with:
@@ -43,11 +44,22 @@ jobs:
       - name: 🧱 Build
         run: dotnet build ./DevHabit/DevHabit.sln --configuration Release --no-restore
         working-directory: ${{ github.workspace }}
+=======
+    - name: 📦 Restore dependencies
+      run: dotnet restore DevHabit.sln
+
+    - name: 🧱 Build
+      run: dotnet build DevHabit.sln --configuration Release --no-restore
+
+    - name: ✅ Test
+      run: dotnet test DevHabit.sln --configuration Release --no-restore --no-build --logger trx --results-directory ./TestResults
+>>>>>>> 2b8a3253d627e5291a7e5674759b2b991fb7b735
 
       - name: ✅ Run tests
         run: dotnet test ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --logger trx --results-directory ./TestResults
         working-directory: ${{ github.workspace }}
 
+<<<<<<< HEAD
       - name: 📤 Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,3 +70,7 @@ jobs:
       - name: 🚀 Publish
         run: dotnet publish ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --output ./publish
         working-directory: ${{ github.workspace }}
+=======
+    - name: 🚀 Publish (build outputs)
+      run: dotnet publish DevHabit.sln --configuration Release --no-restore --no-build --output ./publish
+>>>>>>> 2b8a3253d627e5291a7e5674759b2b991fb7b735
