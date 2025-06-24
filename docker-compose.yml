@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   devhabit.api:
     image: ${DOCKER_REGISTRY-}devhabitapi
@@ -7,16 +9,26 @@ services:
     ports:
       - 5000:8080
       - 5001:8081
+    depends_on:
+      - sqlserver2022
     environment:
-      # Seq
-      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.seq:5341/ingest/otlp
-      # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      # Aspire Dashboard
+      - ConnectionStrings__DefaultConnection=Server=localhost,1433;Database=DevHabitDB;User Id=sa;Password=Str0ngP@ssw0rd2025!;TrustServerCertificate=true;
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.aspire-dashboard:18889
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
+  devhabit.sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-lts
+    container_name: sqlserver2022
+    environment:
+      SA_PASSWORD: "Str0ngP@ssw0rd2025!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - 1433:1433
+    volumes:
+      - ./.containers/sqlserver2022:/data
+
   devhabit.seq:
-    image: datalust/seq:2024.3 # or latest
+    image: datalust/seq:2024.3
     environment:
       ACCEPT_EULA: "Y"
     volumes:

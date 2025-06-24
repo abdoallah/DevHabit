@@ -1,3 +1,7 @@
+using DevHabit.Api.Database;
+using DevHabit.Api.Extentions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -10,6 +14,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Fixing the syntax issues in the following line
+builder.Services.AddDbContext<ApplicationDBContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions => npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.DevHabit)
+        );
+});
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(res => res.AddService(builder.Environment.ApplicationName))
@@ -39,6 +52,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    await app.MigrateDatabaseAsync()
+        .ConfigureAwait(true);
 }
 
 app.UseHttpsRedirection();

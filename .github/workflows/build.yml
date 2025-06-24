@@ -14,32 +14,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-    - name: 🛠 Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: 🛠 Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 🧠 Debug: folder structure
-      run: ls -R
+      - name: 🧠 Debug: Print working directory and file tree
+        run: |
+          echo "Current path: $(pwd)"
+          ls -R
+        working-directory: ${{ github.workspace }}
 
-    - name: 📦 Restore dependencies
-      run: dotnet restore ./DevHabit/DevHabit.sln
+      - name: 💾 Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
 
-    - name: 🧱 Build
-      run: dotnet build ./DevHabit/DevHabit.sln --configuration Release --no-restore
+      - name: 📦 Restore dependencies
+        run: dotnet restore ./DevHabit/DevHabit.sln
+        working-directory: ${{ github.workspace }}
 
-    - name: ✅ Test
-      run: dotnet test ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --logger trx --results-directory ./TestResults
+      - name: 🧱 Build
+        run: dotnet build ./DevHabit/DevHabit.sln --configuration Release --no-restore
+        working-directory: ${{ github.workspace }}
 
-    - name: 📤 Upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: ./TestResults
+      - name: ✅ Run tests
+        run: dotnet test ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --logger trx --results-directory ./TestResults
+        working-directory: ${{ github.workspace }}
 
-    - name: 🚀 Publish (build outputs)
-      run: dotnet publish ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --output ./publish
+      - name: 📤 Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults
+
+      - name: 🚀 Publish
+        run: dotnet publish ./DevHabit/DevHabit.sln --configuration Release --no-restore --no-build --output ./publish
+        working-directory: ${{ github.workspace }}
